@@ -1,0 +1,39 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+# Load the log file
+log_file = "t_tsetskhladze25_98745_server.log"
+
+# Example Apache/Nginx common log format parser
+# Adjust the datetime format to your log
+def parse_log(file_path):
+    timestamps = []
+    with open(file_path) as f:
+        for line in f:
+            try:
+                # Example: [12/Feb/2026:14:35:12 +0000]
+                ts_str = line.split('[')[1].split(']')[0].split()[0]
+                ts = pd.to_datetime(ts_str, format="%d/%b/%Y:%H:%M:%S")
+                timestamps.append(ts)
+            except:
+                continue
+    return pd.Series(timestamps)
+
+# Extract timestamps
+timestamps = parse_log(log_file)
+
+# Aggregate requests per minute
+requests_per_min = timestamps.dt.floor('T').value_counts().sort_index()
+df = pd.DataFrame({
+    'time': requests_per_min.index,
+    'requests': requests_per_min.values
+})
+
+# Regression analysis: fit sliding windows to detect high deviations
+window = 10  # number of points in sliding regression
+df['trend'] = np.nan
+
+for i in range(len(df)-window):
+    x = np.arange(window).reshape(-1,1)
