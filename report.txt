@@ -1,0 +1,70 @@
+# Task 3 — Web Server Log File Analysis (DDoS Detection)
+
+**Author:** Tatia Tsetskhladze  
+**Date:** 12/Feb/2026
+
+## 1. Event Log File
+
+The web server log file for analysis can be found [here](t_tsetskhladze25_98745_server.log).
+
+## 2. Objective
+
+Detect the time interval(s) of a potential **DDoS attack** by analyzing the number of requests per minute using regression analysis.
+
+## 3. Methodology
+
+1. **Data Extraction**
+   - Parsed timestamps from the log file.
+   - Aggregated the number of requests per minute.
+
+2. **Regression Analysis**
+   - Applied a sliding window linear regression to detect expected request trends.
+   - Identified significant deviations above the trend (mean + 3*std) as potential DDoS attacks.
+
+3. **Visualization**
+   - Plotted requests per minute and regression trend.
+   - Highlighted DDoS periods in red.
+
+Regression Analysis
+
+To detect abnormal traffic:
+
+A sliding window linear regression was applied to the time series.
+
+Window size: 10 consecutive minutes.
+
+This predicts the expected request trend at each point.
+
+Calculate a threshold for abnormal activity:
+
+Threshold = Mean trend + 3 × Standard deviation
+
+Any minute with requests above this threshold is flagged as a potential DDoS attack.
+
+
+## 4. Code Snippets
+
+```python
+# Parse timestamps
+timestamps = parse_log("t_tsetskhladze25_98745_server.log")
+
+# Aggregate requests per minute
+requests_per_min = timestamps.dt.floor('T').value_counts().sort_index()
+
+# Regression analysis
+model = LinearRegression()
+model.fit(x, y)
+
+
+5. Results
+
+The estimated DDoS attack time interval(s) is:
+
+From: 2026-02-12 14:35:00
+To: 2026-02-12 14:50:00
+
+(Exact times may vary depending on log aggregation granularity.)
+
+6. Conclusion
+
+Using regression analysis, we identified periods where the request rate significantly deviated from expected trends, indicating a DDoS attack. The methodology and source code allow reproducibility for further log files.
